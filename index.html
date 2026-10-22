@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ちゆの秘書室</title>
+<meta name="theme-color" content="#FF8FA3">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="秘書室">
+<style>
+  :root{
+    --ground:#FDF0E6; --surface:#FFFFFF; --tint:#FFF6EE; --ink:#5A4636; --ink-soft:#9A8574; --line:#F0E0D2;
+    --primary:#FF8FA3; --primary-deep:#F06F88; --mint:#7CC98F; --mint-soft:#E3F5E7; --hisho:#FFF1C9; --on:#FFE3E9;
+    --k-study:#DDEBFA; --k-sub:#FFE3E9; --k-play:#FFF1C9; --k-rest:#E6E0F8; --k-msg:#DDF3EA;
+    --shadow:0 10px 28px -14px rgba(90,70,54,.35); --r:22px;
+    --fnt:"Hiragino Maru Gothic ProN","Yu Gothic UI",Meiryo,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#221B17; --surface:#2E2621; --tint:#382E27; --ink:#F6E9DD; --ink-soft:#C2AE9C; --line:#4A3D33;
+      --primary:#FF9DB0; --primary-deep:#FFB3C2; --mint:#8BD69D; --mint-soft:#203A27; --hisho:#4A3F22; --on:#4A2A33;
+      --k-study:#24344A; --k-sub:#4A2A33; --k-play:#4A3F22; --k-rest:#332B4A; --k-msg:#1F3D33;
+      --shadow:0 12px 30px -14px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#221B17; --surface:#2E2621; --tint:#382E27; --ink:#F6E9DD; --ink-soft:#C2AE9C; --line:#4A3D33;
+    --primary:#FF9DB0; --primary-deep:#FFB3C2; --mint:#8BD69D; --mint-soft:#203A27; --hisho:#4A3F22; --on:#4A2A33;
+    --k-study:#24344A; --k-sub:#4A2A33; --k-play:#4A3F22; --k-rest:#332B4A; --k-msg:#1F3D33;
+    --shadow:0 12px 30px -14px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--ground);color:var(--ink);font-family:var(--fnt);line-height:1.6;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+  input,textarea,select{font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:10px 12px;width:100%}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--primary)}
+  .wrap{max-width:960px;margin:0 auto;padding:16px 16px 48px}
+  h1{text-align:center;font-size:24px;margin:6px 0 2px}
+  .sub{text-align:center;color:var(--ink-soft);font-size:13px;margin-bottom:16px}
+  .card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+  .card h2{font-size:17px;margin-bottom:10px;text-align:center}
+  .grid{display:grid;grid-template-columns:1fr;gap:16px}
+  @media (min-width:820px){.grid{grid-template-columns:1.1fr .9fr}}
+  .hisho{display:flex;gap:14px;align-items:center;background:var(--hisho);border-radius:var(--r);padding:16px 18px;margin-bottom:16px;box-shadow:var(--shadow)}
+  .hisho .face{font-size:56px;line-height:1;flex:none;cursor:pointer}
+  .hisho .name{font-weight:800}
+  .bubble{background:var(--surface);border-radius:16px;padding:10px 14px;margin-top:4px;font-size:15px;white-space:pre-wrap}
+  .batt{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .batt button{background:var(--tint);border:2px solid transparent;border-radius:16px;padding:10px 4px;font-weight:700;font-size:14px}
+  .batt button span{display:block;font-size:28px}
+  .batt button.on{border-color:var(--primary);background:var(--on)}
+  .big{display:block;width:100%;margin-top:14px;padding:16px;border-radius:18px;background:var(--primary);color:#fff;font-weight:800;font-size:18px;box-shadow:0 8px 18px -10px var(--primary-deep)}
+  .three{list-style:none}
+  .three li{border:2px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:10px}
+  .three li.done{opacity:.6}
+  .three li.done .ttl{text-decoration:line-through}
+  .three .top{display:flex;gap:8px;align-items:center}
+  .three .no{font-weight:800;font-size:20px;color:var(--primary-deep)}
+  .three .ttl{font-weight:800;font-size:16px;flex:1}
+  .three .why{font-size:13px;color:var(--ink-soft);margin:2px 0 8px 30px}
+  .three .acts{display:flex;gap:6px;margin-left:30px;flex-wrap:wrap}
+  .mini{padding:6px 12px;border-radius:99px;background:var(--tint);font-size:13px;font-weight:700}
+  .mini.go{background:var(--primary);color:#fff}
+  .mini.ok{background:var(--mint-soft)}
+  .tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;flex:none}
+  .k-勉強{background:var(--k-study)} .k-提出物{background:var(--k-sub)} .k-遊び{background:var(--k-play)} .k-休息{background:var(--k-rest)} .k-連絡{background:var(--k-msg)}
+  .empty{color:var(--ink-soft);font-size:14px;text-align:center;padding:10px;list-style:none}
+  .kinds{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;justify-content:center}
+  .kinds button{padding:6px 12px;border-radius:99px;font-weight:700;font-size:14px;border:2px solid transparent}
+  .kinds button.on{border-color:var(--ink)}
+  .postrow{display:flex;gap:8px}
+  .postrow input{flex:1}
+  .mic{flex:none;width:46px;border-radius:14px;background:var(--tint);font-size:20px}
+  .mic.rec{background:var(--primary);color:#fff}
+  .due{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:13px;color:var(--ink-soft)}
+  .due input{width:auto;padding:6px 10px}
+  .pbtn{display:block;width:100%;margin-top:10px;padding:12px;border-radius:14px;background:var(--ink);color:var(--ground);font-weight:800}
+  .box{list-style:none;margin-top:14px;max-height:340px;overflow:auto}
+  .box li{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .box li span.t{flex:1}
+  .box li small{color:var(--primary-deep);font-weight:700}
+  .box li button{color:var(--ink-soft);font-size:13px;padding:2px 6px}
+  .quick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;justify-content:center}
+  .quick button{padding:6px 12px;border-radius:99px;background:var(--tint);font-size:13px;font-weight:700}
+  .reply{white-space:pre-wrap;background:var(--tint);border-radius:16px;padding:14px 16px;margin-top:14px;font-size:15px}
+  .reply .q{color:var(--ink-soft);font-size:12px;margin-bottom:6px;white-space:normal}
+  .reply .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .reply a{color:var(--primary-deep);font-weight:700}
+  .draft{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:8px;white-space:pre-wrap;font-size:14px}
+  .draft b{display:block;font-size:12px;color:var(--ink-soft)}
+  .row{display:flex;gap:8px}
+  .row>*{flex:1}
+  .msg{text-align:center;font-size:13px;margin-top:8px;min-height:20px;color:var(--primary-deep)}
+  .doneList{list-style:none;font-size:14px}
+  .doneList li::before{content:"🌱 "}
+  .doneList li.empty::before{content:""}
+  .modal{position:fixed;inset:0;background:rgba(40,25,15,.45);display:flex;align-items:flex-end;justify-content:center;z-index:50;padding:16px}
+  .sheet{background:var(--surface);border-radius:var(--r);width:100%;max-width:520px;max-height:88vh;overflow:auto;padding:20px}
+  .sheet h3{font-size:18px;margin-bottom:10px}
+  .faces{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
+  .faces button{font-size:30px;width:52px;height:52px;border-radius:14px;background:var(--tint);border:2px solid transparent}
+  .faces button.on{border-color:var(--primary)}
+  .hidden{display:none!important}
+  .foot{text-align:center;margin-top:8px}
+  .foot button{color:var(--ink-soft);font-size:13px;text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🏠 ちゆの秘書室</h1>
+  <div class="sub">〜 ひとつずつで、だいじょうぶ 〜</div>
+
+  <div class="hisho">
+    <div class="face" id="h-face" title="秘書を変える">🦊</div>
+    <div style="flex:1"><div class="name" id="h-name">ひしょ</div><div class="bubble" id="h-say"></div></div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>🔋 今日の電池は？</h2>
+        <div class="batt" id="batt">
+          <button data-b="げんき"><span>🔋</span>げんき</button>
+          <button data-b="ふつう"><span>🪫</span>ふつう</button>
+          <button data-b="からっぽ"><span>😪</span>からっぽ</button>
+        </div>
+        <button class="big" id="btn-three"></button>
+      </div>
+
+      <div class="card">
+        <h2>✨ 今日の3つ</h2>
+        <ul class="three" id="three"></ul>
+      </div>
+
+      <div class="card">
+        <h2>📮 受付カウンター 〜秘書に話す〜</h2>
+        <div class="quick">
+          <button data-q="draft">💬 連絡の下書き</button>
+          <button data-q="moya">☁️ もやもや</button>
+          <button data-q="dousei">😮‍💨 どうせ無理かも</button>
+          <button data-q="furi">🌙 ふりかえり</button>
+        </div>
+        <textarea id="ask" rows="3" placeholder="例：明日までの提出物があるんだけど、何からやればいい？"></textarea>
+        <button class="big" id="btn-ask" style="margin-top:10px">🦊 秘書に渡す</button>
+        <div class="msg" id="msg"></div>
+        <div class="reply hidden" id="reply"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>📦 やることポスト</h2>
+        <div class="kinds" id="kinds"></div>
+        <div class="postrow">
+          <input type="text" id="p-title" maxlength="60" placeholder="思いついたら、ここにポイッ">
+          <button class="mic" id="mic" title="声で入れる">🎤</button>
+        </div>
+        <div class="due">しめきり（あれば）<input type="date" id="p-due"></div>
+        <button class="pbtn" id="btn-add">ポストに入れる</button>
+        <ul class="box" id="box"></ul>
+      </div>
+
+      <div class="card">
+        <h2>🌱 今日できたこと</h2>
+        <ul class="doneList" id="doneList"></ul>
+      </div>
+      <div class="foot"><button id="btn-set">秘書のなまえ・すがたを変える</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal hidden" id="m-set">
+  <div class="sheet">
+    <h3>秘書のなまえ・すがた</h3>
+    <input id="set-name" maxlength="12" placeholder="なまえ">
+    <div class="faces" id="faces"></div>
+    <div class="row"><button class="big" style="margin-top:0" id="set-ok">これにする</button></div>
+    <div class="foot" style="margin-top:14px"><button id="set-reset">記録をぜんぶ消す</button></div>
+  </div>
+</div>
+
+<script>
+/* ============ ちゆの秘書室（AIなし版） ============
+   秘書の考え方は Claude Code 版の CLAUDE.md と同じルールをアプリの中に書いたもの。
+   ・電池に合わせて今日の3つ（充電＝遊び・休息を必ず1つ以上）を理由1行つきで決める
+   ・入れかえ／できた／ふりかえり（できたことだけ）／連絡の下書き（送らない）／もやもや（受けとめるだけ）
+   記録はこの端末の localStorage（キー hishoshitsu_v1）だけ。外部送信なし。 */
+const KEY='hishoshitsu_v1';
+const KINDS=[['勉強','📚'],['提出物','📝'],['遊び','🎀'],['休息','🛌'],['連絡','💬']];
+const FACES=['🦊','🐰','🐱','🐻','🐶','🦉','🐧','🦄','🐹','🐼'];
+const HITOTSU='https://chinatsu78npsd78-cmd.github.io/hitotsu/';
+const STUDY=['提出物','勉強','連絡'], CHARGE=['遊び','休息'];
+const CHARGE_IDEAS=[['推しの時間','遊び'],['一人でのんびり','休息'],['コスプレ・メイクの時間','遊び'],['推しの曲を聞く','遊び'],['絵・写真・デコ','遊び'],['ベッドでのんびり','休息']];
+const EASY=/英単語|単語|みみずく|計算|リスニング|暗記|漢字|サクッと|一問一答/;
+const DANGER=/もう無理|もうむり|全部むり|ぜんぶむり|全部無理|ぜんぶ無理|生きてる意味|生きる意味|消えたい|死にたい|しにたい|いなくなりたい|自殺|リスカ|リストカット|切りたい|傷つけ|殴られ|叩かれ|たたかれ|いじめ|会おうって|会おうと|知らない人/;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+let uid=0;const newId=()=>Date.now().toString(36)+(uid++);
+
+/* ---------- 保存 ---------- */
+function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+const today=()=>ymd(new Date());
+function load(){
+  let s=null;try{s=JSON.parse(localStorage.getItem(KEY));}catch(e){}
+  return Object.assign({hisho:{name:'ひしょ',emoji:'🦊'},battery:'',today:[],day:'',done_today:[],history:[],
+    box:[{id:'a',title:'学校ワーク（テスト範囲）',kind:'提出物',due:''},{id:'b',title:'英単語15分（みみずく）',kind:'勉強',due:''},
+         {id:'c',title:'推しの時間',kind:'遊び',due:''},{id:'d',title:'一人でのんびり',kind:'休息',due:''}]},s||{});
+}
+let S=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function rollDay(){
+  if(S.day===today())return;
+  if(S.day&&S.done_today.length&&!S.history.some(h=>h.date===S.day))S.history.unshift({date:S.day,done:S.done_today.slice()});
+  S.history=S.history.slice(0,30);
+  S.day=today();S.today=[];S.done_today=[];S.battery='';save();
+}
+
+/* ---------- 秘書のことば ---------- */
+let bubble='';
+function greet(){
+  const h=new Date().getHours();
+  if(h>=22||h<4)return '夜まで、おつかれさま。ベッドタイム、楽しんでね🌙';
+  if(S.today.length&&S.today.every(t=>t.done))return '今日の3つ、ぜんぶできたね。あとは好きにすごしてね';
+  if(S.today.length)return 'できたら「✓ できた」を押してね。入れかえもOKだよ';
+  if(h<10)return 'おはよ、ちゆ。電池をえらんだら「今日の3つを決めて！」を押してね';
+  if(h<17)return 'おかえり、ちゆ。思いついたやることは、ポストにポイッとどうぞ';
+  return 'おつかれさま、ちゆ。今日はどうだった？';
+}
+function setSay(t){bubble=t;$('h-say').textContent=t;}
+
+/* ---------- 今日の3つを決める ---------- */
+function daysLeft(due){if(!due)return null;const a=new Date(due+'T00:00'),b=new Date(today()+'T00:00');return Math.round((a-b)/864e5);}
+function studyRank(x){const d=daysLeft(x.due);return [d===null?999:d, x.kind==='提出物'?0:x.kind==='連絡'?1:2];}
+function shrink(x){
+  const t=x.title;
+  if(/15分|1ページ|だけ/.test(t))return t;
+  if(x.kind==='提出物'&&/ワーク|プリント|ドリル/.test(t))return t+' 1ページだけ';
+  if(x.kind==='勉強')return t+' を15分だけ';
+  return t;
+}
+function reasonFor(x){
+  const d=daysLeft(x.due);
+  if(x.kind==='提出物'){
+    if(d!==null&&d<0)return 'しめきりが過ぎてても、出せば形に残るから';
+    if(d===0)return '今日しめきりだから';
+    if(d===1)return 'あしたしめきりだから';
+    if(d!==null&&d<=3)return 'しめきりが近いから（あと'+d+'日）';
+    return '提出物は、やった分がそのまま形に残るから';
+  }
+  if(x.kind==='勉強')return EASY.test(x.title)?'答えがすぐわかるやつだから、始めやすいかも':'15分だけなら、いけそうだから';
+  if(x.kind==='連絡')return '早めに送れたら、気持ちが軽くなるかも';
+  if(x.kind==='遊び')return /推し/.test(x.title)?'推しの時間は、ちゆのエネルギーだから':'充電も、大事な予定だから';
+  return '休むのも、今日の予定のうち';
+}
+function candidates(side,exclude){
+  const ex=new Set(exclude||[]);
+  if(side==='study'){
+    return S.box.filter(b=>STUDY.includes(b.kind)&&!ex.has(b.id)).sort((a,b)=>{const ra=studyRank(a),rb=studyRank(b);return ra[0]-rb[0]||ra[1]-rb[1];});
+  }
+  const fromBox=S.box.filter(b=>CHARGE.includes(b.kind)&&!ex.has(b.id));
+  const ideas=CHARGE_IDEAS.filter(([t])=>!S.box.some(b=>b.title===t)).map(([t,k])=>({id:'idea:'+t,title:t,kind:k,due:''})).filter(x=>!ex.has(x.id));
+  return fromBox.concat(ideas);
+}
+function toItem(x){return {ref:x.id,title:x.kind==='遊び'||x.kind==='休息'?x.title:shrink(x),kind:x.kind,reason:reasonFor(x),done:false};}
+function decide(){
+  if(S.day!==today()){const b=S.battery;rollDay();S.battery=b;}
+  if(!S.battery){setSay('先に、今日の電池をえらんでね🔋');return;}
+  const plan={'げんき':[2,1],'ふつう':[1,2],'からっぽ':[0,1]}[S.battery];
+  let st=candidates('study').slice(0,plan[0]);
+  let chPool=candidates('charge');
+  // 遊びと休息をまぜる
+  const ch=[];const play=chPool.filter(c=>c.kind==='遊び'),rest=chPool.filter(c=>c.kind==='休息');
+  for(let i=0;ch.length<plan[1]&&(play.length||rest.length);i++){const src=(i%2===0?play:rest).length?(i%2===0?play:rest):(play.length?play:rest);ch.push(src.shift());}
+  // 勉強の候補が足りないときは充電で埋める
+  while(st.length+ch.length<plan[0]+plan[1]){const more=candidates('charge',ch.map(c=>c.id));if(!more.length)break;ch.push(more[0]);}
+  // ①はすぐ始められるもの：得意な勉強 → しめきり順
+  st.sort((a,b)=>{const ea=EASY.test(a.title)&&!(daysLeft(a.due)!==null&&daysLeft(a.due)<=1),eb=EASY.test(b.title)&&!(daysLeft(b.due)!==null&&daysLeft(b.due)<=1);
+    const ua=daysLeft(a.due)!==null&&daysLeft(a.due)<=1,ub=daysLeft(b.due)!==null&&daysLeft(b.due)<=1;
+    return (ub-ua)||(eb-ea);});
+  S.today=st.concat(ch).map(toItem);save();
+  if(S.battery==='からっぽ')setSay('電池からっぽの日は、1つだけにしたよ。\nこれもしんどかったら、今日は休む日にしてもいいよ');
+  else setSay('今日の3つ、決めたよ。\n入れかえたいのがあったら「入れかえて」を押してね');
+  render();
+}
+function swap(i){
+  const cur=S.today[i];const side=STUDY.includes(cur.kind)?'study':'charge';
+  const used=S.today.map(t=>t.ref);
+  const alt=candidates(side,used)[0];
+  if(!alt){setSay(side==='study'?'かわりが見つからなかったよ。ポストに入れてくれたら、そこから選ぶね':'ほかの充電が見つからなかったよ。ポストに「遊び」か「休息」で入れてね');return;}
+  S.today[i]=toItem(alt);save();setSay('「'+alt.title+'」に入れかえたよ。どうかな？');render();
+}
+function done(i){
+  const t=S.today[i];if(t.done)return;t.done=true;S.done_today.push(t.title);
+  if(STUDY.includes(t.kind))S.box=S.box.filter(b=>b.id!==t.ref);
+  save();
+  const left=S.today.filter(x=>!x.done).length;
+  setSay(pick(['できたね。ちゃんと、ひとつ進んだよ','取り組めたこと、それがいちばん大事','おつかれさま。いい感じに進んでるね'])+(left?'\n休憩する？それとも次いく？':'\n今日の3つ、ぜんぶできたね🌱'));
+  render();
+}
+
+/* ---------- 受付カウンター ---------- */
+function showReply(q,html){const r=$('reply');r.classList.remove('hidden');r.innerHTML=(q?`<div class="q">ちゆ：${esc(q)}</div>`:'')+html;r.scrollIntoView({behavior:'smooth',block:'nearest'});}
+function safety(q){
+  showReply(q,`話してくれて、ありがとう。
+ひとりで抱えなくていいよ。
+話せそうな大人（ママ、先生、スクールカウンセラー）がいたら、ちょっとだけでも話してみてね。
+
+ママに言いにくいときは、ここでも話を聞いてくれるよ。
+・24時間子供SOSダイヤル <a href="tel:0120078310">0120-0-78310</a>（24時間・無料）
+・チャイルドライン <a href="tel:0120997777">0120-99-7777</a>（毎日16時〜21時・無料・名前は言わなくていい）
+今すぐ危ないときは、<a href="tel:110">110</a> か <a href="tel:119">119</a> にかけてね。`);
+  setSay('話してくれて、ありがとう');
+}
+function parseDue(t){
+  const d=new Date();
+  if(/今日/.test(t))return today();
+  if(/明日|あした/.test(t)){d.setDate(d.getDate()+1);return ymd(d);}
+  if(/明後日|あさって/.test(t)){d.setDate(d.getDate()+2);return ymd(d);}
+  const m=t.match(/(\d{1,2})[\/月](\d{1,2})/);if(m){const y=d.getFullYear();return ymd(new Date(y,+m[1]-1,+m[2]));}
+  return '';
+}
+let pendingAdd=null;
+function handleAsk(q){
+  if(DANGER.test(q))return safety(q);
+  if(/どうせ|無理|むり/.test(q))return dousei(q);
+  if(/眠い|ねむい|疲れ|つかれ|しんどい|だるい|やる気(が)?(出|で)ない/.test(q)){
+    showReply(q,`そっか、電池が少なめなのかもね。
+今日は「からっぽ」で、1つだけにしてみる？<div class="acts"><button class="mini go" data-act="empty">からっぽで決める</button><button class="mini" data-act="close">ううん、だいじょうぶ</button></div>`);
+    return;
+  }
+  if(/提出|しめきり|締め切り|宿題|までに|出さないと|やらないと/.test(q)){
+    const due=parseDue(q);
+    pendingAdd={title:(q.replace(/(が|を)?(ある|あって|あるんだけど).*$/,'').replace(/^(今日|明日|あした|明後日|あさって|\d{1,2}[\/月]\d{1,2}日?)(まで)?(に|が)?/,'').trim()||q).slice(0,40),kind:/提出|宿題|ワーク|プリント/.test(q)?'提出物':'勉強',due};
+    showReply(q,`教えてくれてありがとう。ポストに入れておく？
+「${esc(pendingAdd.title)}」${due?'（しめきり '+esc(due.slice(5).replace('-','/'))+'）':''}<div class="acts"><button class="mini go" data-act="add">入れておく</button><button class="mini" data-act="close">今はいい</button></div>`);
+    return;
+  }
+  if(/何から|なにから|どれから|わからない|決められない/.test(q)){
+    showReply(q,`そういうときこそ、秘書の出番だね。
+電池をえらんで、今日の3つを決めちゃおう。<div class="acts"><button class="mini go" data-act="three">今日の3つを決める</button></div>`);
+    return;
+  }
+  showReply(q,`書いてくれてありがとう。
+これは、やることとしてポストに入れる？それとも、気持ちとして置いておく？<div class="acts"><button class="mini go" data-act="addfree">ポストに入れる</button><button class="mini" data-act="keep">気持ちとして置いておく</button></div>`);
+  pendingAdd={title:q.slice(0,40),kind:'勉強',due:parseDue(q)};
+}
+function dousei(q){
+  const past=S.history.filter(h=>h.date!==S.day);
+  const recent=S.done_today.concat(...past.map(h=>h.done)).slice(0,3);
+  const head='そっか、そう思っちゃうときも、あるよね。話してくれてありがとう。\n';
+  const step=S.today.some(t=>!t.done)?'今日は、①をちらっと見るだけでもいいよ。'
+    :`よかったら、いちばん小さい1つだけ一緒に決めてみる？<div class="acts"><button class="mini go" data-act="one">1つだけ決める</button></div>`;
+  showReply(q,head+(recent.length?`前にちゆができたこと、ここにそっと置いておくね。
+${recent.map(r=>'🌱 '+esc(r)).join('\n')}
+`:'')+step);
+  setSay('ここにいるよ');
+}
+function furikaeri(){
+  rollDay();
+  const d=S.done_today;
+  showReply('今日のふりかえりをしたい',(d.length?`今日できたこと：
+${d.map(x=>'🌱 '+esc(x)).join('\n')}
+
+ちゃんと、一日すすめたね。`:`今日も一日すごしたね。
+休めたなら、それも大事な日。`)+`
+ベッドタイム、楽しんでね🌙`);
+  if(d.length){S.history=S.history.filter(h=>h.date!==S.day);S.history.unshift({date:S.day,done:d.slice()});S.history=S.history.slice(0,30);save();}
+  setSay('おつかれさま、ちゆ');
+}
+function moyaPanel(){
+  showReply('ちょっと、もやもやを聞いてほしい',`うん、聞くよ。ここに書くだけでいいよ。
+書いたことはどこにも送られないし、残さないよ。
+<textarea id="moya-in" rows="3" style="margin-top:8px" placeholder="思ったことを、そのまま"></textarea>
+<div class="acts"><button class="mini go" data-act="moya">書いた</button></div>`);
+}
+function moyaReply(t){
+  if(DANGER.test(t))return safety('（もやもや）');
+  showReply('（もやもや）',pick(['書いてくれてありがとう。そう感じたんだね。','うん、うん。それは、もやもやするよね。','そっか。話してくれて、ありがとう。'])+`
+ちゆがそう感じたこと、ちゃんと受け取ったよ。
+もう少し書きたかったら、いつでもどうぞ。`);
+  setSay('聞かせてくれて、ありがとう');
+}
+/* 連絡の下書き */
+const DRAFTS={
+  '先生':{'提出が遅れる':['{n}先生\n{x}の提出が遅れてしまって、すみません。できるだけ早く提出します。よろしくお願いします。','先生、{x}がまだできていなくて、すみません。できたらすぐ出します。'],
+         '質問したい':['{n}先生\n{x}について、わからないところがあります。お時間のあるときに教えていただけますか。','先生、{x}でわからないところがあって、あとで聞きに行ってもいいですか？'],
+         'お礼を言いたい':['{n}先生\n{x}、ありがとうございました。とても助かりました。','先生、{x}ありがとうございました！']},
+  '友達':{'返事が遅れた':['返事おそくなってごめんね！{x}のこと、ありがとう。','ごめん、返事おそくなった！{x}ありがと〜'],
+         '今回は断りたい':['誘ってくれてありがとう！{x}は今回やめておくね。','誘ってくれてありがと！{x}は今回パスで🙏 またね'],
+         'ありがとうを伝えたい':['{x}、ほんとにありがとう。うれしかった！','{x}ありがと！助かった〜']}
+};
+const DRAFTS_EMPTY={
+  '先生':{'提出が遅れる':['{n}先生\n課題の提出が遅れてしまって、すみません。できるだけ早く提出します。よろしくお願いします。','先生、課題がまだできていなくて、すみません。できたらすぐ出します。'],
+         '質問したい':['{n}先生\n授業でわからないところがあります。お時間のあるときに教えていただけますか。','先生、わからないところがあって、あとで聞きに行ってもいいですか？'],
+         'お礼を言いたい':['{n}先生\nいろいろと、ありがとうございました。とても助かりました。','先生、いろいろありがとうございました！']},
+  '友達':{'返事が遅れた':['返事おそくなってごめんね！','ごめん、返事おそくなった！'],
+         '今回は断りたい':['誘ってくれてありがとう！今回はやめておくね。','誘ってくれてありがと！今回はパスで🙏'],
+         'ありがとうを伝えたい':['このまえは、ほんとにありがとう。うれしかった！','このまえありがと！助かった〜']}
+};
+function draftPanel(){
+  showReply('連絡の下書きを手伝ってほしい',`いいよ。だれに、どんな連絡？
+<div class="row" style="margin-top:8px"><select id="d-to"><option>先生</option><option>友達</option></select><select id="d-what"></select></div>
+<input id="d-x" style="margin-top:8px" maxlength="30" placeholder="なんのこと？（例：数学ワーク）">
+<input id="d-n" style="margin-top:8px" maxlength="10" placeholder="先生の名前（あれば）">
+<div class="acts"><button class="mini go" data-act="draft">下書きを作る</button></div><div id="d-out"></div>`);
+  const fill=()=>{const t=$('d-to').value;$('d-what').innerHTML=Object.keys(DRAFTS[t]).map(k=>`<option>${k}</option>`).join('');$('d-n').classList.toggle('hidden',t!=='先生');$('d-x').placeholder=t==='先生'?'なんのこと？（例：数学ワーク）':'なんのこと？（例：土曜のカラオケ）';};
+  $('d-to').onchange=fill;fill();
+}
+function makeDraft(){
+  const to=$('d-to').value,w=$('d-what').value,x0=$('d-x').value.trim(),n=$('d-n').value.trim();
+  const x=x0||'';
+  const [a,b]=(x0?DRAFTS[to][w]:DRAFTS_EMPTY[to][w]).map(t=>t.replace('{x}',x).replace('{n}先生\n',n?n+'先生\n':'').replace('{n}',n));
+  $('d-out').innerHTML=`<div class="draft"><b>ていねい版</b>${esc(a)}</div><button class="mini" data-copy="0" style="margin-top:6px">コピー</button>
+    <div class="draft"><b>ふつう版</b>${esc(b)}</div><button class="mini" data-copy="1" style="margin-top:6px">コピー</button>
+    <p style="font-size:13px;color:var(--ink-soft);margin-top:8px">送るかどうかは、ちゆが決めてね。秘書からは送らないよ。</p>`;
+  $('d-out').dataset.a=a;$('d-out').dataset.b=b;
+}
+$('reply').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.copy!==undefined){const o=$('d-out');const t=b.dataset.copy==='0'?o.dataset.a:o.dataset.b;
+    (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{b.textContent='コピーしたよ';}).catch(()=>{b.textContent='長押しでコピーしてね';});return;}
+  const a=b.dataset.act;
+  if(a==='close'){$('reply').classList.add('hidden');}
+  else if(a==='empty'){S.battery='からっぽ';save();render();decide();$('reply').classList.add('hidden');}
+  else if(a==='one'){S.battery='からっぽ';save();render();decide();$('reply').classList.add('hidden');}
+  else if(a==='three'){$('reply').classList.add('hidden');if(S.battery)decide();else{setSay('先に、今日の電池をえらんでね🔋');window.scrollTo({top:0,behavior:'smooth'});}}
+  else if(a==='add'||a==='addfree'){if(pendingAdd){S.box.push(Object.assign({id:newId()},pendingAdd));save();render();showReply('','ポストに入れておいたよ📦');pendingAdd=null;}}
+  else if(a==='keep'){showReply('','うん、ここに置いておくね。\n話したくなったら、またいつでもどうぞ。');pendingAdd=null;}
+  else if(a==='moya'){const t=$('moya-in').value.trim();if(t)moyaReply(t);}
+  else if(a==='draft'){makeDraft();}
+});
+
+/* ---------- 画面 ---------- */
+function render(){
+  rollDay();
+  $('h-face').textContent=S.hisho.emoji;$('h-name').textContent=S.hisho.name;
+  if(!bubble)$('h-say').textContent=greet();
+  document.querySelectorAll('#batt button').forEach(b=>b.classList.toggle('on',b.dataset.b===S.battery));
+  $('btn-three').textContent=S.hisho.emoji+' 今日の3つを決めて！';
+  $('btn-ask').textContent=S.hisho.emoji+' 秘書に渡す';
+  const t=S.today;
+  $('three').innerHTML=t.length?t.map((x,i)=>`<li class="${x.done?'done':''}">
+      <div class="top"><span class="no">${'①②③'[i]||i+1}</span><span class="ttl">${esc(x.title)}</span><span class="tag k-${esc(x.kind)}">${esc(x.kind)}</span></div>
+      <div class="why">… ${esc(x.reason)}</div>
+      <div class="acts">${x.done?'<span class="mini ok">🌱 できた！</span>':
+        `<button class="mini ok" data-done="${i}">✓ できた</button><button class="mini" data-swap="${i}">入れかえて</button>
+         ${x.kind==='勉強'||x.kind==='提出物'?'<button class="mini go" data-go="1">▶ 15分スタート</button>':''}`}</div></li>`).join('')
+    :'<li class="empty">まだ決まってないよ。電池をえらんで、上のボタンを押してね</li>';
+  $('box').innerHTML=S.box.length?S.box.map((b,i)=>`<li><span class="tag k-${esc(b.kind)}">${esc(b.kind)}</span><span class="t">${esc(b.title)}</span>
+      ${b.due?`<small>〆${esc(b.due.slice(5).replace('-','/'))}</small>`:''}<button data-rm="${i}" title="ポストから出す">✕</button></li>`).join('')
+    :'<li class="empty">ポストは空っぽ。思いついたら入れてね</li>';
+  const d=S.done_today;
+  $('doneList').innerHTML=d.length?d.map(x=>`<li>${esc(x)}</li>`).join(''):'<li class="empty">できたことが、ここにたまっていくよ</li>';
+}
+
+/* ---------- 操作 ---------- */
+let kind='勉強';
+$('kinds').innerHTML=KINDS.map(([k,e])=>`<button class="k-${k}${k===kind?' on':''}" data-k="${k}">${e} ${k}</button>`).join('');
+$('kinds').onclick=e=>{const b=e.target.closest('button');if(!b)return;kind=b.dataset.k;document.querySelectorAll('#kinds button').forEach(x=>x.classList.toggle('on',x.dataset.k===kind));};
+$('batt').onclick=e=>{const b=e.target.closest('button');if(!b)return;S.battery=b.dataset.b;save();bubble='';render();};
+$('btn-three').onclick=decide;
+$('btn-ask').onclick=()=>{const v=$('ask').value.trim();if(!v){$('msg').textContent='なにか書いてから渡してね';return;}$('msg').textContent='';handleAsk(v);$('ask').value='';};
+document.querySelector('.quick').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  ({draft:draftPanel,moya:moyaPanel,dousei:()=>dousei('どうせ無理かも…'),furi:furikaeri})[b.dataset.q]();};
+$('three').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.done!==undefined)done(+b.dataset.done);else if(b.dataset.swap!==undefined)swap(+b.dataset.swap);else if(b.dataset.go)window.open(HITOTSU,'_blank');};
+$('btn-add').onclick=()=>{const title=$('p-title').value.trim();if(!title){$('msg').textContent='やることを書いてね';return;}
+  S.box.push({id:newId(),title,kind,due:$('p-due').value});save();$('p-title').value='';$('p-due').value='';$('msg').textContent='ポストに入れたよ📦';render();};
+$('p-title').addEventListener('keydown',e=>{if(e.key==='Enter')$('btn-add').click();});
+$('box').onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.rm!==undefined){S.box.splice(+b.dataset.rm,1);save();render();}};
+/* 秘書を変える */
+function openSet(){$('set-name').value=S.hisho.name;$('faces').innerHTML=FACES.map(f=>`<button class="${f===S.hisho.emoji?'on':''}">${f}</button>`).join('');$('m-set').classList.remove('hidden');}
+$('btn-set').onclick=openSet;$('h-face').onclick=openSet;
+$('faces').onclick=e=>{const b=e.target.closest('button');if(!b)return;document.querySelectorAll('#faces button').forEach(x=>x.classList.toggle('on',x===b));};
+$('set-ok').onclick=()=>{const f=document.querySelector('#faces button.on');S.hisho={name:$('set-name').value.trim()||'ひしょ',emoji:f?f.textContent:S.hisho.emoji};save();$('m-set').classList.add('hidden');render();};
+$('m-set').onclick=e=>{if(e.target.id==='m-set')$('m-set').classList.add('hidden');};
+$('set-reset').onclick=()=>{if(confirm('ポスト・今日の3つ・できたことの記録を、ぜんぶ消す？')){localStorage.removeItem(KEY);S=load();save();$('m-set').classList.add('hidden');bubble='';render();}};
+/* 声で入れる */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR)$('mic').style.display='none';
+else{let rec=null;$('mic').onclick=()=>{if(rec){rec.stop();return;}rec=new SR();rec.lang='ja-JP';$('mic').classList.add('rec');
+  rec.onresult=e=>{$('p-title').value=e.results[0][0].transcript;};rec.onend=()=>{$('mic').classList.remove('rec');rec=null;};
+  rec.onerror=()=>{$('msg').textContent='うまく聞きとれなかったみたい';};rec.start();};}
+
+render();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

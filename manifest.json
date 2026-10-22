@@ -1,0 +1,13 @@
+{
+  "name": "ちゆの秘書室",
+  "short_name": "秘書室",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FDF0E6",
+  "theme_color": "#FF8FA3",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}
