@@ -413,7 +413,7 @@ function draftPanel(){
 function makeDraft(){
   const to=$('d-to').value,w=$('d-what').value,x0=$('d-x').value.trim(),n=$('d-n').value.trim();
   const x=x0||'';
-  const [a,b]=(x0?DRAFTS[to][w]:DRAFTS_EMPTY[to][w]).map(t=>t.replace('{x}',x).replace('{n}先生\n',n?n+'先生\n':'').replace('{n}',n));
+  const [a,b]=(x0?DRAFTS[to][w]:DRAFTS_EMPTY[to][w]).map(t=>t.replace('{x}',x).replace('{n}先生\n',n?n+'先生\n':'先生\n').replace('{n}',n));
   $('d-out').innerHTML=`<div class="draft"><b>ていねい版</b>${esc(a)}</div><button class="mini" data-copy="0" style="margin-top:6px">コピー</button>
     <div class="draft"><b>ふつう版</b>${esc(b)}</div><button class="mini" data-copy="1" style="margin-top:6px">コピー</button>
     <p style="font-size:13px;color:var(--ink-soft);margin-top:8px">送るかどうかは、ちゆが決めてね。秘書からは送らないよ。</p>`;
