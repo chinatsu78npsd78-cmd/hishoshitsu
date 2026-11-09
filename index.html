@@ -468,7 +468,8 @@ function render(){
 /* ---------- 操作 ---------- */
 let kind='勉強';
 $('kinds').innerHTML=KINDS.map(([k,e])=>`<button class="k-${k}${k===kind?' on':''}" data-k="${k}">${e} ${k}</button>`).join('');
-$('kinds').onclick=e=>{const b=e.target.closest('button');if(!b)return;kind=b.dataset.k;document.querySelectorAll('#kinds button').forEach(x=>x.classList.toggle('on',x.dataset.k===kind));};
+let kindManual=false;
+$('kinds').onclick=e=>{const b=e.target.closest('button');if(!b)return;kind=b.dataset.k;kindManual=true;document.querySelectorAll('#kinds button').forEach(x=>x.classList.toggle('on',x.dataset.k===kind));};
 $('batt').onclick=e=>{const b=e.target.closest('button');if(!b)return;S.battery=b.dataset.b;save();bubble='';render();};
 $('btn-three').onclick=decide;
 $('btn-ask').onclick=()=>{const v=$('ask').value.trim();if(!v){$('msg').textContent='なにか書いてから渡してね';return;}$('msg').textContent='';handleAsk(v);$('ask').value='';};
@@ -477,7 +478,7 @@ document.querySelector('.quick').onclick=e=>{const b=e.target.closest('button');
 $('three').onclick=e=>{const b=e.target.closest('button');if(!b)return;
   if(b.dataset.done!==undefined)done(+b.dataset.done);else if(b.dataset.swap!==undefined)swap(+b.dataset.swap);else if(b.dataset.go)window.open(HITOTSU,'_blank');};
 $('btn-add').onclick=()=>{const title=$('p-title').value.trim();if(!title){tip('tip-post','やることを書いてね（🎤で話してもOK）');return;}
-  S.box.push({id:newId(),title,kind,due:$('p-due').value});save();$('p-title').value='';$('p-due').value='';tip('tip-post','📦 ポストに入れたよ');render();};
+  S.box.push({id:newId(),title,kind,due:$('p-due').value});save();$('p-title').value='';$('p-due').value='';kindManual=false;tip('tip-post','📦 ポストに入れたよ');render();};
 $('p-title').addEventListener('keydown',e=>{if(e.key==='Enter')$('btn-add').click();});
 $('box').onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.rm!==undefined){S.box.splice(+b.dataset.rm,1);save();render();}};
 /* 秘書を変える */
@@ -507,7 +508,8 @@ function setKind(k){kind=k;document.querySelectorAll('#kinds button').forEach(x=
 function tip(id,html){const el=$(id);if(!html){el.classList.add('hidden');return;}el.innerHTML=html;el.classList.remove('hidden');}
 function keyboardVoice(field,tipId){
   const f=$(field);f.focus();
-  tip(tipId,IOS?'⌨️ キーボードの右下の <b>🎤（マイク）</b> を押して話してね。話し終わったら、もう一度押すと止まるよ'
+  tip(tipId,IOS?'⌨️ キーボードの下にある <b>🎤（マイク）</b> を押して話してね。話し終わったら、もう一度🎤を押すと止まるよ'
+      +'<br><small>🎤が見つからないときは：iPhoneの「設定」→「一般」→「キーボード」→「音声入力」をオンにしてね</small>'
               :'⌨️ キーボードの <b>🎤（マイク）</b> を押して話してね');
 }
 function afterVoicePost(t){
@@ -516,7 +518,8 @@ function afterVoicePost(t){
   tip('tip-post','✅ これでよければ「ポストに入れる」を押してね'+(k?'（種類：'+k+'）':'')+(d?'　しめきり '+d.slice(5).replace('-','/'):''));
 }
 function startVoice(field,tipId,btnId,after){
-  if(!SR||voiceMode==='keyboard'){keyboardVoice(field,tipId);return;}
+  // iPhoneはブラウザの聞き取りが止まりやすいので、いつもキーボードの🎤を使う
+  if(IOS||!SR||voiceMode==='keyboard'){keyboardVoice(field,tipId);return;}
   let rec;try{rec=new SR();}catch(e){voiceMode='keyboard';keyboardVoice(field,tipId);return;}
   const btn=$(btnId);rec.lang='ja-JP';rec.interimResults=false;rec.maxAlternatives=1;
   let got=false;
@@ -536,7 +539,10 @@ function startVoice(field,tipId,btnId,after){
 $('mic').onclick=()=>startVoice('p-title','tip-post','mic',afterVoicePost);
 $('mic-ask').onclick=()=>startVoice('ask','tip-ask','mic-ask',null);
 /* キーボードの🎤で入れた場合も、種類としめきりを自動で選ぶ */
-$('p-title').addEventListener('change',()=>{const t=$('p-title').value;if(t){const k=guessKind(t);if(k)setKind(k);const d=parseDue(t);if(d&&!$('p-due').value)$('p-due').value=d;}tip('tip-post','');});
+function guessFromTitle(){const t=$('p-title').value;if(!t)return;if(!kindManual){const k=guessKind(t);if(k)setKind(k);}const d=parseDue(t);if(d&&!$('p-due').value)$('p-due').value=d;}
+let guessT=null;
+$('p-title').addEventListener('input',()=>{clearTimeout(guessT);guessT=setTimeout(guessFromTitle,600);});
+$('p-title').addEventListener('change',()=>{guessFromTitle();tip('tip-post','');});
 $('ask').addEventListener('input',()=>tip('tip-ask',''));
 
 render();
