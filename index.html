@@ -73,8 +73,11 @@
   .kinds button.on{border-color:var(--ink)}
   .postrow{display:flex;gap:8px}
   .postrow input{flex:1}
-  .mic{flex:none;width:46px;border-radius:14px;background:var(--tint);font-size:20px}
-  .mic.rec{background:var(--primary);color:#fff}
+  .mic{flex:none;width:52px;border-radius:14px;background:var(--on);border:2px solid var(--primary);font-size:22px}
+  .mic.rec{background:var(--primary);color:#fff;animation:pulse 1s ease-in-out infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+  .postrow textarea{flex:1}
+  .voicetip{margin-top:8px;background:var(--yellow-soft,#FFF3D6);border-radius:12px;padding:8px 12px;font-size:13px;line-height:1.5}
   .due{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:13px;color:var(--ink-soft)}
   .due input{width:auto;padding:6px 10px}
   .pbtn{display:block;width:100%;margin-top:10px;padding:12px;border-radius:14px;background:var(--ink);color:var(--ground);font-weight:800}
@@ -143,7 +146,11 @@
           <button data-q="dousei">😮‍💨 どうせ無理かも</button>
           <button data-q="furi">🌙 ふりかえり</button>
         </div>
-        <textarea id="ask" rows="3" placeholder="例：明日までの提出物があるんだけど、何からやればいい？"></textarea>
+        <div class="postrow">
+          <textarea id="ask" rows="3" placeholder="例：明日までの提出物があるんだけど、何からやればいい？"></textarea>
+          <button class="mic" id="mic-ask" title="声で話す">🎤</button>
+        </div>
+        <div class="voicetip hidden" id="tip-ask"></div>
         <button class="big" id="btn-ask" style="margin-top:10px">🦊 秘書に渡す</button>
         <div class="msg" id="msg"></div>
         <div class="reply hidden" id="reply"></div>
@@ -158,6 +165,7 @@
           <input type="text" id="p-title" maxlength="60" placeholder="思いついたら、ここにポイッ">
           <button class="mic" id="mic" title="声で入れる">🎤</button>
         </div>
+        <div class="voicetip hidden" id="tip-post"></div>
         <div class="due">しめきり（あれば）<input type="date" id="p-due"></div>
         <button class="pbtn" id="btn-add">ポストに入れる</button>
         <ul class="box" id="box"></ul>
@@ -468,8 +476,8 @@ document.querySelector('.quick').onclick=e=>{const b=e.target.closest('button');
   ({draft:draftPanel,moya:moyaPanel,dousei:()=>dousei('どうせ無理かも…'),furi:furikaeri})[b.dataset.q]();};
 $('three').onclick=e=>{const b=e.target.closest('button');if(!b)return;
   if(b.dataset.done!==undefined)done(+b.dataset.done);else if(b.dataset.swap!==undefined)swap(+b.dataset.swap);else if(b.dataset.go)window.open(HITOTSU,'_blank');};
-$('btn-add').onclick=()=>{const title=$('p-title').value.trim();if(!title){$('msg').textContent='やることを書いてね';return;}
-  S.box.push({id:newId(),title,kind,due:$('p-due').value});save();$('p-title').value='';$('p-due').value='';$('msg').textContent='ポストに入れたよ📦';render();};
+$('btn-add').onclick=()=>{const title=$('p-title').value.trim();if(!title){tip('tip-post','やることを書いてね（🎤で話してもOK）');return;}
+  S.box.push({id:newId(),title,kind,due:$('p-due').value});save();$('p-title').value='';$('p-due').value='';tip('tip-post','📦 ポストに入れたよ');render();};
 $('p-title').addEventListener('keydown',e=>{if(e.key==='Enter')$('btn-add').click();});
 $('box').onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.rm!==undefined){S.box.splice(+b.dataset.rm,1);save();render();}};
 /* 秘書を変える */
@@ -479,12 +487,57 @@ $('faces').onclick=e=>{const b=e.target.closest('button');if(!b)return;document.
 $('set-ok').onclick=()=>{const f=document.querySelector('#faces button.on');S.hisho={name:$('set-name').value.trim()||'ひしょ',emoji:f?f.textContent:S.hisho.emoji};save();$('m-set').classList.add('hidden');render();};
 $('m-set').onclick=e=>{if(e.target.id==='m-set')$('m-set').classList.add('hidden');};
 $('set-reset').onclick=()=>{if(confirm('ポスト・今日の3つ・できたことの記録を、ぜんぶ消す？')){localStorage.removeItem(KEY);S=load();save();$('m-set').classList.add('hidden');bubble='';render();}};
-/* 声で入れる */
+/* 声で入れる
+   ・聞き取り機能があるスマホ（Androidのブラウザなど）→ その場で聞き取る
+   ・ない／許可されないスマホ（iPhone・ホーム画面アプリなど）→ 入力欄を開いて「キーボードの🎤で話してね」と案内
+   ・話した内容から、ポストの種類としめきりを自動で選ぶ */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(!SR)$('mic').style.display='none';
-else{let rec=null;$('mic').onclick=()=>{if(rec){rec.stop();return;}rec=new SR();rec.lang='ja-JP';$('mic').classList.add('rec');
-  rec.onresult=e=>{$('p-title').value=e.results[0][0].transcript;};rec.onend=()=>{$('mic').classList.remove('rec');rec=null;};
-  rec.onerror=()=>{$('msg').textContent='うまく聞きとれなかったみたい';};rec.start();};}
+const IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const VKEY='hishoshitsu_voice';
+let voiceMode='auto';try{voiceMode=localStorage.getItem(VKEY)||'auto';}catch(e){}
+function guessKind(t){
+  if(/提出|宿題|ワーク|プリント|レポート|課題/.test(t))return '提出物';
+  if(/LINE|ライン|連絡|返事|メッセージ|電話|伝え/.test(t))return '連絡';
+  if(/寝る|ねる|休む|やすむ|ごろごろ|昼寝|お風呂/.test(t))return '休息';
+  if(/推し|遊|ゲーム|マイクラ|コスプレ|メイク|カラオケ|買い物|動画/.test(t))return '遊び';
+  if(/勉強|単語|計算|テスト|暗記|みみずく|英語|数学|国語|理科|社会/.test(t))return '勉強';
+  return null;
+}
+function setKind(k){kind=k;document.querySelectorAll('#kinds button').forEach(x=>x.classList.toggle('on',x.dataset.k===kind));}
+function tip(id,html){const el=$(id);if(!html){el.classList.add('hidden');return;}el.innerHTML=html;el.classList.remove('hidden');}
+function keyboardVoice(field,tipId){
+  const f=$(field);f.focus();
+  tip(tipId,IOS?'⌨️ キーボードの右下の <b>🎤（マイク）</b> を押して話してね。話し終わったら、もう一度押すと止まるよ'
+              :'⌨️ キーボードの <b>🎤（マイク）</b> を押して話してね');
+}
+function afterVoicePost(t){
+  const k=guessKind(t);if(k)setKind(k);
+  const d=parseDue(t);if(d)$('p-due').value=d;
+  tip('tip-post','✅ これでよければ「ポストに入れる」を押してね'+(k?'（種類：'+k+'）':'')+(d?'　しめきり '+d.slice(5).replace('-','/'):''));
+}
+function startVoice(field,tipId,btnId,after){
+  if(!SR||voiceMode==='keyboard'){keyboardVoice(field,tipId);return;}
+  let rec;try{rec=new SR();}catch(e){voiceMode='keyboard';keyboardVoice(field,tipId);return;}
+  const btn=$(btnId);rec.lang='ja-JP';rec.interimResults=false;rec.maxAlternatives=1;
+  let got=false;
+  btn.classList.add('rec');tip(tipId,'👂 聞いてるよ。話してね（もう一度🎤を押すと止まるよ）');
+  btn.onclick=()=>{try{rec.stop();}catch(e){}};
+  rec.onresult=e=>{got=true;const t=e.results[0][0].transcript;const f=$(field);f.value=(f.value?f.value+' ':'')+t;tip(tipId,'');if(after)after(f.value);};
+  rec.onerror=e=>{
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'||e.error==='audio-capture'){
+      voiceMode='keyboard';try{localStorage.setItem(VKEY,'keyboard');}catch(x){}
+      keyboardVoice(field,tipId);
+    }else if(e.error==='no-speech'){tip(tipId,'うまく聞こえなかったみたい。もう一度🎤を押して話してね');}
+    else{tip(tipId,'うまく聞きとれなかったみたい。もう一度🎤を押してね');}
+  };
+  rec.onend=()=>{btn.classList.remove('rec');btn.onclick=()=>startVoice(field,tipId,btnId,after);if(!got&&$(tipId).textContent.startsWith('👂'))tip(tipId,'');};
+  try{rec.start();}catch(e){voiceMode='keyboard';keyboardVoice(field,tipId);btn.classList.remove('rec');}
+}
+$('mic').onclick=()=>startVoice('p-title','tip-post','mic',afterVoicePost);
+$('mic-ask').onclick=()=>startVoice('ask','tip-ask','mic-ask',null);
+/* キーボードの🎤で入れた場合も、種類としめきりを自動で選ぶ */
+$('p-title').addEventListener('change',()=>{const t=$('p-title').value;if(t){const k=guessKind(t);if(k)setKind(k);const d=parseDue(t);if(d&&!$('p-due').value)$('p-due').value=d;}tip('tip-post','');});
+$('ask').addEventListener('input',()=>tip('tip-ask',''));
 
 render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
