@@ -109,6 +109,30 @@
   .hidden{display:none!important}
   .foot{text-align:center;margin-top:8px}
   .foot button{color:var(--ink-soft);font-size:13px;text-decoration:underline}
+  /* テスト・おこづかい */
+  .money{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--hisho);border-radius:16px;padding:12px 16px}
+  .money b{font-size:28px;color:var(--primary-deep)}
+  .money small{display:block;font-size:12px;color:var(--ink-soft)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .two .pbtn{margin-top:0}
+  .lbl{display:block;font-size:13px;font-weight:700;color:var(--ink-soft);margin-top:10px}
+  .lbl input,.lbl select{margin-top:4px}
+  .photo{position:relative;margin-top:4px;min-height:110px;display:grid;place-items:center;border:2px dashed var(--line);border-radius:16px;background:var(--tint);overflow:hidden;text-align:center;font-size:14px;color:var(--ink-soft)}
+  .photo input{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .photo img{width:100%;max-height:240px;object-fit:contain}
+  .rules{background:var(--tint);border-radius:14px;padding:10px 12px;margin-top:12px;font-size:13px;line-height:1.7}
+  .yenprev{display:flex;justify-content:space-between;align-items:center;background:var(--mint-soft);border-radius:14px;padding:10px 14px;margin-top:10px;font-weight:700}
+  .yenprev b{font-size:24px}
+  .tlist{list-style:none;margin-top:8px}
+  .tlist li{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .tlist .th{width:56px;height:56px;border-radius:12px;object-fit:cover;background:var(--tint);display:grid;place-items:center;font-size:24px}
+  .tlist small{display:block;color:var(--ink-soft);font-size:12px}
+  .tlist .y{font-weight:800;color:var(--primary-deep);white-space:nowrap}
+  .tlist button{color:var(--ink-soft);font-size:12px;text-decoration:underline;padding:0}
+  .seg{display:flex;gap:6px;margin:4px 0 4px}
+  .seg button{flex:1;padding:8px;border-radius:12px;background:var(--tint);font-weight:700;font-size:14px;border:2px solid transparent}
+  .seg button.on{border-color:var(--primary);background:var(--on)}
+  .sheet .x{float:right;font-size:22px;color:var(--ink-soft)}
 </style>
 </head>
 <body>
@@ -172,6 +196,17 @@
       </div>
 
       <div class="card">
+        <h2>📸 テスト・おこづかい</h2>
+        <div class="money"><div><small>いままでのおこづかい</small><b id="m-total">0円</b></div><div style="font-size:40px">💰</div></div>
+        <div class="two">
+          <button class="pbtn" id="btn-test">📸 テストを記録</button>
+          <button class="pbtn" id="btn-report" style="background:var(--primary)">🏫 成績表を記録</button>
+        </div>
+        <ul class="tlist" id="m-recent"></ul>
+        <div class="foot" style="margin-top:6px"><button id="btn-money">ぜんぶの記録・うちわけを見る</button></div>
+      </div>
+
+      <div class="card">
         <h2>🌱 今日できたこと</h2>
         <ul class="doneList" id="doneList"></ul>
       </div>
@@ -187,6 +222,65 @@
     <div class="faces" id="faces"></div>
     <div class="row"><button class="big" style="margin-top:0" id="set-ok">これにする</button></div>
     <div class="foot" style="margin-top:14px"><button id="set-reset">記録をぜんぶ消す</button></div>
+  </div>
+</div>
+
+<div class="modal hidden" id="m-test">
+  <div class="sheet">
+    <button class="x" data-close="m-test">✕</button>
+    <h3>📸 テストを記録する</h3>
+    <label class="lbl">テストの写真
+      <div class="photo" id="t-photobox"><div id="t-photoprompt">📸<br>ここを押して、写真を撮る・えらぶ</div><img id="t-photoimg" class="hidden" alt="テストの写真"><input type="file" id="t-photo" accept="image/*"></div>
+    </label>
+    <label class="lbl">🎤 話して入れる（例：数学 85点、やり直し100点）</label>
+    <div class="postrow" style="margin-top:4px">
+      <input type="text" id="t-say" placeholder="例：英語92点">
+      <button class="mic" id="mic-test" title="声で入れる">🎤</button>
+    </div>
+    <div class="voicetip hidden" id="tip-test"></div>
+    <div class="two">
+      <label class="lbl" style="margin-top:0">教科<select id="t-subject"></select></label>
+      <label class="lbl" style="margin-top:0">テストの日<input type="date" id="t-date"></label>
+      <label class="lbl" style="margin-top:0">最初の点数<input type="number" id="t-first" min="0" max="100" inputmode="numeric" placeholder="0〜100"></label>
+      <label class="lbl" style="margin-top:0">やり直しの点数<input type="number" id="t-retry" min="0" max="100" inputmode="numeric" placeholder="あれば"></label>
+    </div>
+    <div class="rules"><b>おこづかいルール</b><br>・最初から90〜100点 → 100円<br>・最初は何点でも、やり直して100点 → 50円<br>・それ以外 → 0円</div>
+    <div class="yenprev"><span>このテストのおこづかい</span><b id="t-yen">0円</b></div>
+    <button class="big" id="t-save">記録する</button>
+    <div class="msg" id="t-msg"></div>
+  </div>
+</div>
+
+<div class="modal hidden" id="m-report">
+  <div class="sheet">
+    <button class="x" data-close="m-report">✕</button>
+    <h3>🏫 成績表を記録する</h3>
+    <label class="lbl">できたこと
+      <select id="r-type">
+        <option value="study_a">評定が「5」（いちばん上の評価）・100円</option>
+        <option value="committee">委員長・代表などに選ばれた・200円</option>
+        <option value="behavior_circle">行動の記録などが「〇」・200円</option>
+      </select>
+    </label>
+    <label class="lbl">教科・項目<input type="text" id="r-detail" maxlength="50" placeholder="例：英語／責任感"></label>
+    <div class="two">
+      <label class="lbl" style="margin-top:0">いつの成績表？<select id="r-term"><option>1学期</option><option>2学期</option><option>3学期</option><option>前期</option><option>後期</option><option>その他</option></select></label>
+      <label class="lbl" style="margin-top:0">記録した日<input type="date" id="r-date"></label>
+    </div>
+    <div class="yenprev"><span>この記録のおこづかい</span><b id="r-yen">100円</b></div>
+    <button class="big" id="r-save">記録する</button>
+  </div>
+</div>
+
+<div class="modal hidden" id="m-money">
+  <div class="sheet">
+    <button class="x" data-close="m-money">✕</button>
+    <h3>💰 おこづかいの記録</h3>
+    <div class="money"><div><small>いままでのおこづかい</small><b id="mm-total">0円</b></div><div style="font-size:40px">💰</div></div>
+    <div class="rules" id="mm-break"></div>
+    <div class="seg" id="mm-seg"><button data-s="t" class="on">📝 テスト</button><button data-s="r">🏫 成績表</button></div>
+    <ul class="tlist" id="mm-list"></ul>
+    <p style="font-size:11px;color:var(--ink-soft);margin-top:12px;text-align:center">記録と写真は、このスマホの中にだけ保存されます（どこにも送りません）</p>
   </div>
 </div>
 
@@ -546,6 +640,94 @@ $('p-title').addEventListener('change',()=>{guessFromTitle();tip('tip-post','');
 $('ask').addEventListener('input',()=>tip('tip-ask',''));
 
 render();
+
+/* ---------- テスト・おこづかい（なうちゃんの「できたよ！サポート」と同じルール） ----------
+   ・最初から90〜100点 → 100円／最初は何点でも、やり直して100点 → 50円（90点以上なら重ねない）
+   ・成績表：評定5 → 100円、委員長・代表など → 200円、行動の記録〇 → 200円
+   ・記録と写真は localStorage（キー hishoshitsu_money_v1）。「記録をぜんぶ消す」では消えない */
+const MKEY='hishoshitsu_money_v1';
+const SUBJECTS=['国語','数学','英語','理科','社会','その他'];
+let M={tests:[],reports:[]};try{M=Object.assign(M,JSON.parse(localStorage.getItem(MKEY))||{});}catch(e){}
+function saveM(){try{localStorage.setItem(MKEY,JSON.stringify(M));return true;}catch(e){return false;}}
+function yenFor(first,retry){const a=Number(first);if(a>=90&&a<=100)return 100;if(retry!==null&&retry!==''&&Number(retry)===100)return 50;return 0;}
+const R_YEN={study_a:100,committee:200,behavior_circle:200};
+const R_LABEL={study_a:'評定「5」',committee:'委員長・代表など',behavior_circle:'行動の記録〇'};
+const mTotal=()=>M.tests.reduce((a,t)=>a+Number(t.yen||0),0)+M.reports.reduce((a,r)=>a+Number(r.yen||0),0);
+const md=d=>d?d.slice(5).replace('-','/'):'';
+function testLi(t,del){return `<li>${t.photo?`<img class="th" src="${t.photo}" alt="">`:'<div class="th">📝</div>'}
+  <div><b>${esc(t.subject)}　${t.first}点</b>${t.retry!==null?`<small>やり直し ${t.retry}点</small>`:''}<small>${md(t.date)}${del?`　<button data-dt="${esc(t.id)}">消す</button>`:''}</small></div>
+  <span class="y">+${t.yen}円</span></li>`;}
+function reportLi(r,del){return `<li><div class="th">🏫</div><div><b>${R_LABEL[r.type]||''}${r.detail?'・'+esc(r.detail):''}</b><small>${esc(r.term)}　${md(r.date)}${del?`　<button data-dr="${esc(r.id)}">消す</button>`:''}</small></div><span class="y">+${r.yen}円</span></li>`;}
+let mmSeg='t';
+function renderMoney(){
+  const tot=mTotal();$('m-total').textContent=tot.toLocaleString()+'円';$('mm-total').textContent=tot.toLocaleString()+'円';
+  const recent=[...M.tests.map(t=>({k:'t',x:t,c:t.createdAt})),...M.reports.map(r=>({k:'r',x:r,c:r.createdAt}))].sort((a,b)=>b.c<a.c?-1:1).slice(0,3);
+  $('m-recent').innerHTML=recent.length?recent.map(o=>o.k==='t'?testLi(o.x):reportLi(o.x)).join(''):'<li class="empty" style="display:block">テストが返ってきたら、写メして記録しよう📸</li>';
+  const hi=M.tests.filter(t=>Number(t.first)>=90).length, re=M.tests.filter(t=>Number(t.first)<90&&Number(t.retry)===100).length;
+  const rc=k=>M.reports.filter(r=>r.type===k).length;
+  $('mm-break').innerHTML=`最初から90〜100点：${hi}回 × 100円<br>やり直して100点：${re}回 × 50円<br>評定「5」：${rc('study_a')}個 × 100円<br>委員長・代表など：${rc('committee')}個 × 200円<br>行動の記録〇：${rc('behavior_circle')}個 × 200円<br>記録したテスト：${M.tests.length}枚`;
+  document.querySelectorAll('#mm-seg button').forEach(b=>b.classList.toggle('on',b.dataset.s===mmSeg));
+  const L=mmSeg==='t'?M.tests:M.reports;
+  $('mm-list').innerHTML=L.length?L.map(x=>mmSeg==='t'?testLi(x,true):reportLi(x,true)).join(''):'<li class="empty" style="display:block">まだ記録はないよ</li>';
+}
+function openM(id){$(id).classList.remove('hidden');}
+function closeM(id){$(id).classList.add('hidden');}
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closeM(b.dataset.close));
+['m-test','m-report','m-money'].forEach(id=>$(id).addEventListener('click',e=>{if(e.target.id===id)closeM(id);}));
+$('t-subject').innerHTML=SUBJECTS.map(x=>`<option>${x}</option>`).join('');
+let tPhoto='';
+function resetTest(){tPhoto='';$('t-photo').value='';$('t-photoimg').classList.add('hidden');$('t-photoprompt').classList.remove('hidden');
+  $('t-say').value='';$('t-first').value='';$('t-retry').value='';$('t-date').value=today();$('t-msg').textContent='';tip('tip-test','');tYen();}
+function tYen(){$('t-yen').textContent=yenFor($('t-first').value,$('t-retry').value)+'円';}
+$('t-first').oninput=tYen;$('t-retry').oninput=tYen;
+$('btn-test').onclick=()=>{resetTest();openM('m-test');};
+$('btn-report').onclick=()=>{$('r-detail').value='';$('r-date').value=today();rYen();openM('m-report');};
+$('btn-money').onclick=()=>{renderMoney();openM('m-money');};
+$('mm-seg').onclick=e=>{const b=e.target.closest('button');if(!b)return;mmSeg=b.dataset.s;renderMoney();};
+/* 写真：小さくしてから保存（容量節約） */
+function shrink(file){return new Promise((ok,ng)=>{const fr=new FileReader();fr.onerror=ng;fr.onload=()=>{const im=new Image();im.onerror=ng;im.onload=()=>{
+  const r=Math.min(1,1000/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*r);c.height=Math.round(im.height*r);
+  c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',.72));};im.src=fr.result;};fr.readAsDataURL(file);});}
+$('t-photo').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{tPhoto=await shrink(f);$('t-photoimg').src=tPhoto;$('t-photoimg').classList.remove('hidden');$('t-photoprompt').classList.add('hidden');}
+  catch(x){$('t-msg').textContent='写真を読みこめなかったよ。もう一度えらんでね';}};
+/* 話した言葉から、教科・点数を読みとる（例：「数学85点やり直し100点」） */
+function parseTestSay(raw){
+  const t=String(raw).replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/百/g,'100');
+  const subj=/国語|現代文|古文|漢字/.test(t)?'国語':/数学|算数|計算/.test(t)?'数学':/英語|英単語|リスニング/.test(t)?'英語':/理科|生物|化学|物理|地学/.test(t)?'理科':/社会|歴史|地理|公民/.test(t)?'社会':/音楽|美術|技術|家庭|保健|体育/.test(t)?'その他':null;
+  if(subj)$('t-subject').value=subj;
+  let retry=null;const mr=t.match(/(?:やり直し|やりなおし|直し|なおし|再テスト|再試験?)[^0-9]*(\d{1,3})/);
+  let rest=t;if(mr){retry=Number(mr[1]);rest=t.replace(mr[0],'');}
+  const mf=rest.match(/(\d{1,3})\s*(?:点|てん)?/);const first=mf?Number(mf[1]):null;
+  if(first!==null&&first<=100)$('t-first').value=first;
+  if(retry!==null&&retry<=100)$('t-retry').value=retry;
+  tYen();
+  if(first!==null||subj)tip('tip-test','✅ '+(subj?subj+'　':'')+(first!==null?first+'点':'')+(retry!==null?'（やり直し '+retry+'点）':'')+' で入れたよ。よければ「記録する」を押してね');
+}
+$('mic-test').onclick=()=>startVoice('t-say','tip-test','mic-test',v=>{$('t-say').value=v;parseTestSay(v);});
+let tSayT=null;$('t-say').addEventListener('input',()=>{clearTimeout(tSayT);tSayT=setTimeout(()=>parseTestSay($('t-say').value),600);});
+$('t-say').addEventListener('change',()=>parseTestSay($('t-say').value));
+$('t-save').onclick=()=>{
+  const fv=$('t-first').value, rv=$('t-retry').value, f=Number(fv), r=rv===''?null:Number(rv);
+  if(fv===''||f<0||f>100){$('t-msg').textContent='最初の点数を0〜100で入れてね（🎤で話してもOK）';return;}
+  if(r!==null&&(r<0||r>100)){$('t-msg').textContent='やり直しの点数を0〜100で入れてね';return;}
+  const item={id:newId(),subject:$('t-subject').value,first:f,retry:r,date:$('t-date').value||today(),photo:tPhoto,yen:yenFor(f,r),createdAt:new Date().toISOString()};
+  M.tests.unshift(item);
+  if(!saveM()){item.photo='';if(!saveM()){M.tests.shift();$('t-msg').textContent='保存がいっぱいみたい。古い記録を消してから試してね';return;}
+    $('t-msg').textContent='写真が入りきらなかったので、点数だけ記録したよ';}
+  closeM('m-test');renderMoney();
+  bubble=item.yen>=100?`${item.subject} ${item.first}点！すごい、＋${item.yen}円だよ💰`:item.yen>0?`やり直して100点、えらい！＋${item.yen}円だよ💰`:`${item.subject}のテスト、記録したよ。やり直して100点なら＋50円になるよ`;
+  $('h-say').textContent=bubble;window.scrollTo({top:0,behavior:'smooth'});
+};
+function rYen(){$('r-yen').textContent=R_YEN[$('r-type').value]+'円';}
+$('r-type').onchange=rYen;
+$('r-save').onclick=()=>{const type=$('r-type').value;
+  const item={id:newId(),type,detail:$('r-detail').value.trim(),term:$('r-term').value,date:$('r-date').value||today(),yen:R_YEN[type],createdAt:new Date().toISOString()};
+  M.reports.unshift(item);saveM();closeM('m-report');renderMoney();
+  bubble=`成績表、記録したよ。＋${item.yen}円！がんばったね💰`;$('h-say').textContent=bubble;window.scrollTo({top:0,behavior:'smooth'});};
+$('mm-list').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.dt&&confirm('このテストの記録を消す？')){M.tests=M.tests.filter(t=>t.id!==b.dataset.dt);saveM();renderMoney();}
+  if(b.dataset.dr&&confirm('この成績表の記録を消す？')){M.reports=M.reports.filter(r=>r.id!==b.dataset.dr);saveM();renderMoney();}};
+renderMoney();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
